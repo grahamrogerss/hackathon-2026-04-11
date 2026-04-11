@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AlgoGuard Audit Report — {{ platform_name }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 40px; max-width: 860px; margin: 0 auto; }
+    .cover { text-align: center; padding: 60px 0 40px; border-bottom: 2px solid #e5e7eb; margin-bottom: 32px; }
+    .logo { font-size: 28px; font-weight: 700; color: #1e3a8a; margin-bottom: 8px; }
+    .report-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .report-meta { color: #6b7280; font-size: 12px; }
+    .risk-badge { display: inline-block; padding: 6px 18px; border-radius: 20px; font-weight: 700; font-size: 16px; color: #fff; margin: 16px 0 4px; }
+    .score-line { font-size: 13px; color: #6b7280; }
+    section { margin-bottom: 28px; }
+    h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 14px; }
+    p { line-height: 1.6; color: #374151; margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { background: #f3f4f6; text-align: left; padding: 8px 10px; font-weight: 600; }
+    td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .sev-HIGH { color: #ef4444; font-weight: 700; }
+    .sev-MEDIUM { color: #f59e0b; font-weight: 700; }
+    .sev-LOW { color: #22c55e; font-weight: 700; }
+    ul { padding-left: 18px; }
+    li { margin-bottom: 6px; line-height: 1.5; }
+    .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; text-align: center; }
+    @media print { .no-print { display: none; } }
+    .print-btn { margin-bottom: 24px; }
+    button { padding: 8px 20px; background: #1e3a8a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="no-print print-btn">
+    <button onclick="window.print()">🖨 Print / Save as PDF</button>
+  </div>
+
+  {% if audit %}
+  <div class="cover">
+    <div class="logo">🛡️ AlgoGuard</div>
+    <div class="report-title">Algorithm Compliance Audit Report</div>
+    <div class="report-meta">Platform: <strong>{{ audit.platform_name }}</strong> · Generated {{ "now" }}</div>
+    {% set color = "#ef4444" if audit.risk_level == "HIGH" else ("#f59e0b" if audit.risk_level == "MEDIUM" else "#22c55e") %}
+    <div class="risk-badge" style="background:{{ color }}">{{ audit.risk_level }} RISK</div>
+    <div class="score-line">Composite Risk Score: {{ audit.risk_score }} / 100</div>
+  </div>
+
+  <section>
+    <h2>Executive Summary</h2>
+    <p>{{ audit.summary }}</p>
+  </section>
+
+  <section>
+    <h2>Flagged Addiction-Risk Patterns</h2>
+    <table>
+      <thead>
+        <tr><th>Pattern</th><th>RIS Metric</th><th>Severity</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {% for p in audit.flagged_patterns %}
+        <tr>
+          <td><strong>{{ p.pattern }}</strong></td>
+          <td>{{ p.metric }}</td>
+          <td class="sev-{{ p.severity }}">{{ p.severity }}</td>
+          <td>{{ p.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Legal Exposure Analysis</h2>
+    <table>
+      <thead>
+        <tr><th>Framework</th><th>Risk Level</th><th>Exposure Detail</th></tr>
+      </thead>
+      <tbody>
+        {% for l in audit.legal_exposure %}
+        <tr>
+          <td><strong>{{ l.framework }}</strong></td>
+          <td class="sev-{{ l.risk }}">{{ l.risk }}</td>
+          <td>{{ l.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Remediation Recommendations</h2>
+    <ul>
+      {% for r in audit.remediation %}
+      <li>{{ r }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Compliance Framework Mapping</h2>
+    <table>
+      <thead><tr><th>NIST AI RMF Function</th><th>AlgoGuard Coverage</th></tr></thead>
+      <tbody>
+        <tr><td>GOVERN</td><td>Audit report generation, compliance documentation</td></tr>
+        <tr><td>MAP</td><td>RIS metric classification, feature pattern mapping</td></tr>
+        <tr><td>MEASURE</td><td>Risk scoring (0–100), metric threshold monitoring</td></tr>
+        <tr><td>MANAGE</td><td>Remediation recommendations, intervention triggers</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="footer">
+    AlgoGuard · Algorithm Addiction Compliance Auditor · Synthetic demo — not legal advice ·
+    Frameworks referenced: KOSA, DSA, MA 93A, CCPA/CPRA, UK Online Safety Act, NIST AI RMF
+  </div>
+  {% else %}
+  <p>No audit data found for "{{ platform_name }}". Run a Feature Audit from the dashboard first.</p>
+  {% endif %}
+</body>
+</html>

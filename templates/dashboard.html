@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlgoGuard — Live Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">🛡️ AlgoGuard</div>
+    <nav>
+      <a href="/" class="active">Dashboard</a>
+      <a href="#audit-section">Audit</a>
+    </nav>
+    <div class="header-controls">
+      <button onclick="tick()" class="btn-primary">▶ Next Session</button>
+      <button onclick="resetAll()" class="btn-secondary">↺ Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Live Monitor -->
+    <section class="section-title">
+      <h2>Live User Monitor — Pulse Platform</h2>
+      <span class="subtitle">Synthetic behavioral telemetry · Auto-updates every 3s</span>
+    </section>
+
+    <div class="user-grid" id="user-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Feature Audit -->
+    <section class="section-title" id="audit-section" style="margin-top:48px">
+      <h2>Feature Compliance Audit</h2>
+      <span class="subtitle">Describe your platform features — AlgoGuard maps them to RIS risk patterns</span>
+    </section>
+
+    <div class="audit-form-card">
+      <div class="form-row">
+        <input type="text" id="platform-name" placeholder="Platform name (e.g. Pulse Social)" />
+      </div>
+      <div class="form-row">
+        <textarea id="features-input" rows="5"
+          placeholder="Describe your features, e.g.: infinite scroll with no end state, autoplay video at 200ms, 47 push notifications/day, streak system, engagement-optimized ranking..."></textarea>
+      </div>
+      <button onclick="runAudit()" class="btn-primary btn-large" id="audit-btn">
+        Analyze Features
+      </button>
+    </div>
+
+    <div id="audit-result" style="display:none"></div>
+  </main>
+
+  <script>
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function riskColor(level) {
+      return level === "HIGH" ? "#ef4444" : level === "MEDIUM" ? "#f59e0b" : "#22c55e";
+    }
+    function riskBg(level) {
+      return level === "HIGH" ? "#fef2f2" : level === "MEDIUM" ? "#fffbeb" : "#f0fdf4";
+    }
+    function metricBar(val, threshold, key, triggered) {
+      const pct = key === "DDR" || key === "RLI"
+        ? Math.max(0, Math.min(100, (1 - val / (threshold * 2)) * 100))
+        : Math.max(0, Math.min(100, (val / (threshold * 1.5)) * 100));
+      const color = triggered ? "#ef4444" : "#22c55e";
+      return `<div class="metric-bar-wrap">
+        <div class="metric-bar-fill" style="width:${pct}%;background:${color}"></div>
+      </div>`;
+    }
+
+    function renderUsers(users) {
+      const grid = document.getElementById("user-grid");
+      grid.innerHTML = users.map(u => {
+        const color = riskColor(u.risk_level);
+        const bg    = riskBg(u.risk_level);
+        const metrics = Object.entries(u.metrics).map(([k, m]) => `
+          <div class="metric-row">
+            <span class="metric-name">${k}</span>
+            <span class="metric-val ${m.triggered ? 'triggered' : ''}">${m.value}</span>
+            ${metricBar(m.value, m.threshold, k, m.triggered)}
+            <span class="metric-threshold">/ ${m.threshold}</span>
+          </div>`).join("");
+
+        const interventions = u.active_interventions.length
+          ? `<div class="interventions"><strong>Active:</strong> ${u.active_interventions.map(i =>
+              `<span class="tag">${i.replace(/_/g, ' ')}</span>`).join("")}</div>`
+          : "";
+
+        const childBadge = u.is_child_safety_event
+          ? `<span class="badge badge-child">⚠ Child Safety Event</span>` : "";
+
+        const sparkline = u.score_history.length > 1
+          ? `<div class="sparkline">${u.score_history.map((s,i) =>
+              `<div class="spark-bar" style="height:${s}%;background:${riskColor(s>=70?'HIGH':s>=40?'MEDIUM':'LOW')}"
+               title="Session ${i+1}: ${s}"></div>`).join("")}</div>` : "";
+
+        return `<div class="user-card" style="border-top:4px solid ${color};background:${bg}">
+          <div class="user-header">
+            <div>
+              <div class="user-name">${u.name}</div>
+              <div class="user-meta">Age ${u.age} · Session ${u.session} · ${u.is_minor ? "Minor" : "Adult"}</div>
+            </div>
+            <div>
+              <div class="risk-badge" style="background:${color}">${u.risk_level}</div>
+              <div class="risk-score">${u.risk_score}/100</div>
+            </div>
+          </div>
+          ${childBadge}
+          <div class="metrics-section">${metrics}</div>
+          ${interventions}
+          ${sparkline}
+        </div>`;
+      }).join("");
+    }
+
+    // ── API Calls ─────────────────────────────────────────────────────────────
+    async function fetchState() {
+      const res = await fetch("/api/state");
+      const data = await res.json();
+      renderUsers(data);
+    }
+
+    async function tick() {
+      const res = await fetch("/api/tick", {method:"POST"});
+      const data = await res.json();
+      renderUsers(data);
+    }
+
+    async function resetAll() {
+      await fetch("/api/reset", {method:"POST"});
+      fetchState();
+    }
+
+    async function runAudit() {
+      const name = document.getElementById("platform-name").value || "Unknown Platform";
+      const features = document.getElementById("features-input").value;
+      if (!features.trim()) { alert("Enter some features first."); return; }
+
+      const btn = document.getElementById("audit-btn");
+      btn.textContent = "Analyzing…";
+      btn.disabled = true;
+
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({platform_name: name, features})
+      });
+      const data = await res.json();
+      btn.textContent = "Analyze Features";
+      btn.disabled = false;
+      renderAuditResult(data);
+    }
+
+    function renderAuditResult(d) {
+      const color = riskColor(d.risk_level);
+      const bg    = riskBg(d.risk_level);
+      const patterns = d.flagged_patterns.map(p =>
+        `<li><strong>${p.pattern}</strong> <span class="tag" style="background:${riskColor(p.severity)};color:#fff">${p.severity}</span>
+         — ${p.description} <em>(${p.metric})</em></li>`).join("");
+      const legal = d.legal_exposure.map(l =>
+        `<li><strong>${l.framework}</strong> <span class="tag" style="background:${riskColor(l.risk)};color:#fff">${l.risk}</span>
+         — ${l.detail}</li>`).join("");
+      const remed = d.remediation.map(r => `<li>${r}</li>`).join("");
+
+      const html = `<div class="audit-result-card" style="border-top:4px solid ${color};background:${bg}">
+        <div class="audit-result-header">
+          <div>
+            <h3>${d.platform_name}</h3>
+            <p>${d.summary}</p>
+          </div>
+          <div>
+            <div class="risk-badge" style="background:${color}">${d.risk_level}</div>
+            <div class="risk-score">${d.risk_score}/100</div>
+          </div>
+        </div>
+        <div class="audit-sections">
+          <div class="audit-col">
+            <h4>Flagged Patterns</h4><ul>${patterns}</ul>
+          </div>
+          <div class="audit-col">
+            <h4>Legal Exposure</h4><ul>${legal}</ul>
+          </div>
+          <div class="audit-col">
+            <h4>Remediation</h4><ul>${remed}</ul>
+          </div>
+        </div>
+        <a href="/report/${encodeURIComponent(d.platform_name)}" target="_blank" class="btn-secondary" style="margin-top:16px;display:inline-block">
+          📄 View Full Audit Report
+        </a>
+      </div>`;
+
+      const el = document.getElementById("audit-result");
+      el.style.display = "block";
+      el.innerHTML = html;
+      el.scrollIntoView({behavior:"smooth"});
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    fetchState();
+    setInterval(fetchState, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+/* AlgoGuard — Dashboard Styles */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 32px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo { font-size: 20px; font-weight: 700; color: #1e3a8a; flex-shrink: 0; }
+nav { display: flex; gap: 16px; margin-right: auto; }
+nav a { text-decoration: none; color: #64748b; font-size: 14px; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; }
+nav a.active, nav a:hover { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+.header-controls { display: flex; gap: 8px; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn-primary {
+  background: #1e3a8a; color: #fff; border: none;
+  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.btn-primary:hover { background: #1e40af; }
+.btn-secondary {
+  background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s; text-decoration: none;
+}
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-large { padding: 12px 28px; font-size: 15px; width: 100%; margin-top: 4px; }
+
+/* ── Main layout ─────────────────────────────────────────────────────────── */
+main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+.section-title { margin-bottom: 20px; }
+.section-title h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.section-title .subtitle { font-size: 13px; color: #64748b; }
+
+/* ── User grid ───────────────────────────────────────────────────────────── */
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.user-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: box-shadow 0.2s;
+}
+.user-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+
+.user-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.user-name { font-size: 18px; font-weight: 700; }
+.user-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+.risk-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; color: #fff; text-align: center;
+}
+.risk-score { font-size: 22px; font-weight: 700; text-align: center; margin-top: 2px; }
+
+.badge-child {
+  display: inline-block;
+  background: #fef3c7; color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: 6px; padding: 4px 10px;
+  font-size: 12px; font-weight: 600; margin-bottom: 12px;
+}
+
+/* ── Metrics ─────────────────────────────────────────────────────────────── */
+.metrics-section { margin: 12px 0; }
+.metric-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 12px; }
+.metric-name { width: 38px; font-weight: 600; color: #475569; flex-shrink: 0; }
+.metric-val { width: 48px; font-weight: 600; text-align: right; flex-shrink: 0; }
+.metric-val.triggered { color: #ef4444; }
+.metric-bar-wrap { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+.metric-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.metric-threshold { width: 40px; color: #94a3b8; font-size: 11px; }
+
+/* ── Interventions ───────────────────────────────────────────────────────── */
+.interventions { margin-top: 10px; font-size: 12px; }
+.tag {
+  display: inline-block; background: #dbeafe; color: #1e40af;
+  border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+  margin: 2px 3px 2px 0; text-transform: capitalize;
+}
+
+/* ── Sparkline ───────────────────────────────────────────────────────────── */
+.sparkline {
+  display: flex; align-items: flex-end; gap: 3px; height: 32px;
+  margin-top: 12px; padding-top: 4px;
+  border-top: 1px solid #f1f5f9;
+}
+.spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height 0.3s; }
+
+/* ── Audit form ──────────────────────────────────────────────────────────── */
+.audit-form-card {
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 24px;
+}
+.form-row { margin-bottom: 12px; }
+input[type="text"], textarea {
+  width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0;
+  border-radius: 8px; font-size: 14px; font-family: inherit;
+  resize: vertical; color: #1e293b;
+}
+input[type="text"]:focus, textarea:focus {
+  outline: none; border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30,58,138,0.08);
+}
+
+/* ── Audit result ────────────────────────────────────────────────────────── */
+.audit-result-card {
+  background: #fff; border-radius: 12px; padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 24px;
+}
+.audit-result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.audit-result-header h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.audit-result-header p { color: #475569; font-size: 14px; max-width: 560px; line-height: 1.5; }
+.audit-sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 4px; }
+.audit-col h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin-bottom: 10px; }
+.audit-col ul { padding-left: 16px; font-size: 13px; }
+.audit-col li { margin-bottom: 8px; line-height: 1.5; color: #334155; }
