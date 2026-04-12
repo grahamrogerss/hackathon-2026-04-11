@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konduct — Algorithm compliance, before the lawsuit.</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #0f172a;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Nav ─────────────────────────────────────────────────────────────── */
+    .l-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .l-nav-inner {
+      max-width: 1120px; margin: 0 auto; padding: 0 32px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .l-logo {
+      font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px;
+    }
+    .l-nav-links { display: flex; align-items: center; gap: 8px; }
+    .l-nav-link {
+      padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      color: #475569; transition: background 0.15s, color 0.15s;
+    }
+    .l-nav-link:hover { background: #f1f5f9; color: #0f172a; }
+    .l-nav-cta {
+      padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      background: #0f172a; color: #fff; transition: background 0.15s;
+    }
+    .l-nav-cta:hover { background: #1e293b; }
+
+    /* ── Hero ────────────────────────────────────────────────────────────── */
+    .l-hero {
+      background: #0f172a;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(99,102,241,0.12) 0%, transparent 60%);
+      padding: 96px 32px 112px;
+      text-align: center;
+    }
+    .l-hero-inner { max-width: 820px; margin: 0 auto; }
+    .l-eyebrow {
+      display: inline-block; background: rgba(37,99,235,0.18); color: #93c5fd;
+      border: 1px solid rgba(147,197,253,0.25);
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 28px;
+    }
+    .l-headline {
+      font-size: clamp(40px, 6vw, 68px); font-weight: 800; color: #fff;
+      line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 24px;
+    }
+    .l-subhead {
+      font-size: clamp(15px, 2vw, 18px); color: #94a3b8; line-height: 1.7;
+      max-width: 640px; margin: 0 auto 40px;
+    }
+    .l-hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .l-btn-primary {
+      display: inline-block; background: #2563eb; color: #fff;
+      padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .l-btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .l-btn-outline {
+      display: inline-block; background: rgba(255,255,255,0.08); color: #cbd5e1;
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      transition: background 0.15s, color 0.15s;
+    }
+    .l-btn-outline:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* ── Stats bar ───────────────────────────────────────────────────────── */
+    .l-stats {
+      background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+    }
+    .l-stats-inner {
+      max-width: 1120px; margin: 0 auto; padding: 0 32px;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .l-stat {
+      padding: 32px 24px; text-align: center;
+      border-right: 1px solid #e2e8f0;
+    }
+    .l-stat:last-child { border-right: none; }
+    .l-stat-num {
+      font-size: 36px; font-weight: 800; color: #0f172a; letter-spacing: -1px; line-height: 1;
+      margin-bottom: 6px;
+    }
+    .l-stat-lbl { font-size: 13px; color: #64748b; font-weight: 500; }
+
+    /* ── Shared section layout ───────────────────────────────────────────── */
+    .l-section-inner { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+    .l-section-tag {
+      display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #2563eb; margin-bottom: 16px;
+    }
+    .l-section-title {
+      font-size: clamp(26px, 4vw, 40px); font-weight: 800; color: #0f172a;
+      letter-spacing: -0.8px; line-height: 1.15; margin-bottom: 20px;
+    }
+    .l-body-text {
+      font-size: 16px; color: #475569; line-height: 1.75; max-width: 680px;
+      margin-bottom: 32px;
+    }
+
+    /* ── Problem section ─────────────────────────────────────────────────── */
+    .l-problem { padding: 96px 32px; }
+    .l-pullquote {
+      border-left: 4px solid #2563eb; background: #eff6ff;
+      padding: 20px 24px; border-radius: 0 10px 10px 0;
+      font-size: 18px; font-style: italic; color: #1e3a8a; font-weight: 600;
+      line-height: 1.55; max-width: 640px;
+    }
+
+    /* ── How it works ────────────────────────────────────────────────────── */
+    .l-how { background: #f8fafc; padding: 96px 32px; }
+    .l-steps {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px;
+    }
+    .l-step {
+      background: #fff; border-radius: 14px; padding: 32px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .l-step-num {
+      font-size: 13px; font-weight: 800; color: #2563eb;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+    .l-step-title {
+      font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 12px;
+    }
+    .l-step-body { font-size: 14px; color: #475569; line-height: 1.7; }
+
+    /* ── Legal coverage ──────────────────────────────────────────────────── */
+    .l-coverage { padding: 72px 32px; border-top: 1px solid #e2e8f0; }
+    .l-coverage-inner { text-align: center; }
+    .l-coverage-label {
+      font-size: 14px; color: #64748b; margin-bottom: 24px;
+    }
+    .l-law-pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .l-law-pill {
+      display: inline-block; background: #0f172a; color: #e2e8f0;
+      border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Bottom CTA ──────────────────────────────────────────────────────── */
+    .l-cta { background: #0f172a; padding: 96px 32px; text-align: center; }
+    .l-cta-inner { max-width: 600px; margin: 0 auto; }
+    .l-cta-title {
+      font-size: clamp(28px, 4vw, 44px); font-weight: 800; color: #fff;
+      letter-spacing: -0.8px; margin-bottom: 16px;
+    }
+    .l-cta-sub {
+      font-size: 16px; color: #94a3b8; line-height: 1.7; margin-bottom: 36px;
+    }
+    .l-btn-lg { padding: 16px 36px; font-size: 16px; border-radius: 12px; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    .l-footer { background: #020617; padding: 24px 32px; }
+    .l-footer-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      flex-wrap: wrap;
+    }
+    .l-footer .l-logo { color: #94a3b8; font-size: 15px; }
+    .l-footer-note { font-size: 12px; color: #475569; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 800px) {
+      .l-steps { grid-template-columns: 1fr; }
+      .l-stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .l-stat { border-right: none; border-bottom: 1px solid #e2e8f0; }
+      .l-stat:nth-child(odd) { border-right: 1px solid #e2e8f0; }
+    }
+    @media (max-width: 520px) {
+      .l-nav-links .l-nav-link { display: none; }
+      .l-stats-inner { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="l-nav">
+  <div class="l-nav-inner">
+    <a class="l-logo" href="/landing">⚖️ Konduct</a>
+    <div class="l-nav-links">
+      <a class="l-nav-link" href="/dashboard">Dashboard</a>
+      <a class="l-nav-link" href="/dashboard#audit">Audit</a>
+      <a class="l-nav-cta" href="/dashboard">Open Demo →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="l-hero">
+  <div class="l-hero-inner">
+    <div class="l-eyebrow">Behavioral Algorithm Compliance</div>
+    <h1 class="l-headline">Algorithm compliance,<br>before the lawsuit.</h1>
+    <p class="l-subhead">2,465 social media addiction suits are pending nationwide. Konduct audits your platform's algorithm design for addiction-risk patterns — and generates a court-ready compliance record before you need it.</p>
+    <div class="l-hero-btns">
+      <a href="/dashboard" class="l-btn-primary">View Live Demo →</a>
+      <a href="/dashboard#audit" class="l-btn-outline">Run a Feature Audit →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="l-stats">
+  <div class="l-stats-inner">
+    <div class="l-stat">
+      <div class="l-stat-num">2,465</div>
+      <div class="l-stat-lbl">Active addiction suits</div>
+    </div>
+    <div class="l-stat">
+      <div class="l-stat-num">$6M</div>
+      <div class="l-stat-lbl">K.G.M. v. Meta verdict</div>
+    </div>
+    <div class="l-stat">
+      <div class="l-stat-num">70%</div>
+      <div class="l-stat-lbl">Meta liability finding</div>
+    </div>
+    <div class="l-stat">
+      <div class="l-stat-num">5</div>
+      <div class="l-stat-lbl">Legal frameworks covered</div>
+    </div>
+  </div>
+</section>
+
+<!-- Problem -->
+<section class="l-problem">
+  <div class="l-section-inner">
+    <div class="l-section-tag">The Turning Point</div>
+    <h2 class="l-section-title">The K.G.M. v. Meta &amp; YouTube<br>verdict changed everything.</h2>
+    <p class="l-body-text">In the first-ever jury verdict against a social media platform for algorithmic addiction, a federal jury found Meta 70% liable and YouTube 30% liable for addiction-related harm to a minor. The $6 million verdict — and the 2,465 similar suits now pending nationwide — establish that platforms can be held accountable for the design of their recommendation algorithms, not just their content.</p>
+    <blockquote class="l-pullquote">
+      "The question is no longer whether platforms will be sued.<br>It's whether they can prove they tried to fix it."
+    </blockquote>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="l-how">
+  <div class="l-section-inner">
+    <div class="l-section-tag">How It Works</div>
+    <h2 class="l-section-title">From telemetry to court-ready record,<br>in one click.</h2>
+    <div class="l-steps">
+      <div class="l-step">
+        <div class="l-step-num">01</div>
+        <h3 class="l-step-title">Monitor</h3>
+        <p class="l-step-body">Real-time behavioral telemetry across 5 RIS metrics — Session Velocity Gradient, Dwell-to-Dismiss Ratio, Re-entry Latency Index, Notification-Conditioned Response, and Affective Congruence Score. Baseline compulsive-use risk before any incident occurs.</p>
+      </div>
+      <div class="l-step">
+        <div class="l-step-num">02</div>
+        <h3 class="l-step-title">Detect</h3>
+        <p class="l-step-body">AI maps your platform's features to addiction-risk patterns and legal exposure across KOSA, DSA, MA 93A, CCPA/CPRA, and the UK Online Safety Act — with a traceable feature → mechanism → harm pathway for every finding.</p>
+      </div>
+      <div class="l-step">
+        <div class="l-step-num">03</div>
+        <h3 class="l-step-title">Defend</h3>
+        <p class="l-step-body">Download a NIST AI RMF-mapped litigation package in one click. Includes pre-committed threshold records, intervention logs, before/after outcome measurements, and a complete GOVERN–MAP–MEASURE–MANAGE compliance record for legal discovery.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Legal coverage -->
+<section class="l-coverage">
+  <div class="l-section-inner l-coverage-inner">
+    <div class="l-section-tag">Legal Coverage</div>
+    <p class="l-coverage-label">Every audit maps findings to these frameworks automatically</p>
+    <div class="l-law-pills">
+      <span class="l-law-pill">KOSA</span>
+      <span class="l-law-pill">EU DSA</span>
+      <span class="l-law-pill">MA 93A</span>
+      <span class="l-law-pill">UK Online Safety Act</span>
+      <span class="l-law-pill">CCPA / CPRA</span>
+      <span class="l-law-pill">COPPA</span>
+      <span class="l-law-pill">NIST AI RMF 1.0</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="l-cta">
+  <div class="l-cta-inner">
+    <h2 class="l-cta-title">See it in action →</h2>
+    <p class="l-cta-sub">Watch three synthetic user archetypes breach risk thresholds in real time — then generate a full litigation package with one click.</p>
+    <a href="/dashboard" class="l-btn-primary l-btn-lg">Open Live Demo →</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="l-footer">
+  <div class="l-section-inner l-footer-inner">
+    <span class="l-logo">⚖️ Konduct</span>
+    <span class="l-footer-note">Synthetic demonstration — not legal advice. RIS Framework v1.0</span>
+  </div>
+</footer>
+
+</body>
+</html>

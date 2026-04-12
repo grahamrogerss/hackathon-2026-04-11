@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konduct — Litigation Compliance Package — {{ platform_name }}</title>
+  <style>
+    /* ── Base ─────────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Times New Roman", Times, Georgia, serif;
+      font-size: 11pt;
+      color: #000;
+      background: #fff;
+      line-height: 1.55;
+    }
+    h1, h2, h3, h4, th { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+
+    /* ── Page layout ──────────────────────────────────────────────────────── */
+    @page { size: letter; margin: 1in 1in 1.1in 1in; }
+    .lit-page { max-width: 760px; margin: 0 auto; padding: 40px 0; }
+
+    /* ── No-print utility ─────────────────────────────────────────────────── */
+    .no-print { display: block; }
+    @media print { .no-print { display: none !important; } }
+
+    /* ── Cover page ───────────────────────────────────────────────────────── */
+    .cover {
+      text-align: center; padding: 60px 40px;
+      border: 2px solid #000; border-radius: 4px; margin-bottom: 40px;
+    }
+    .cover-logo { font-size: 26pt; font-weight: 800; font-family: sans-serif; margin-bottom: 8px; }
+    .cover-doc-type { font-size: 13pt; font-weight: 700; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 32px; }
+    .cover-platform { font-size: 20pt; font-weight: 700; font-family: sans-serif; margin-bottom: 8px; }
+    .cover-date { font-size: 11pt; color: #444; margin-bottom: 36px; }
+    .cover-confidential {
+      display: inline-block; border: 1.5px solid #000;
+      padding: 6px 18px; font-size: 10pt; font-weight: 700; font-family: sans-serif;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .cover-export-id { font-size: 9pt; color: #666; margin-top: 24px; font-family: monospace; }
+
+    /* ── Print / save button (screen only) ───────────────────────────────── */
+    .print-bar {
+      background: #0f172a; color: #fff; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px; border-radius: 8px;
+    }
+    .print-bar p { font-family: sans-serif; font-size: 13px; color: #94a3b8; }
+    .print-bar strong { color: #fff; }
+    .btn-print {
+      background: #2563eb; color: #fff; border: none; cursor: pointer;
+      padding: 10px 22px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      font-family: sans-serif; transition: background 0.15s;
+    }
+    .btn-print:hover { background: #1d4ed8; }
+
+    /* ── Section structure ────────────────────────────────────────────────── */
+    .lit-section { margin-bottom: 40px; page-break-before: always; }
+    .lit-section:first-of-type { page-break-before: avoid; }
+
+    .section-num {
+      font-family: sans-serif; font-size: 9pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em; color: #555;
+      margin-bottom: 4px;
+    }
+    .section-title {
+      font-size: 16pt; font-weight: 700; border-bottom: 2px solid #000;
+      padding-bottom: 6px; margin-bottom: 14px;
+    }
+    .section-desc { font-size: 10pt; color: #444; margin-bottom: 16px; line-height: 1.6; }
+
+    /* ── Tables ───────────────────────────────────────────────────────────── */
+    .lit-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 16px; }
+    .lit-table th {
+      background: #f0f0f0; text-align: left; padding: 7px 10px;
+      font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      border: 1px solid #ccc;
+    }
+    .lit-table td {
+      padding: 7px 10px; border: 1px solid #ddd; vertical-align: top;
+      line-height: 1.5;
+    }
+    .lit-table tbody tr:nth-child(even) td { background: #fafafa; }
+    .mono { font-family: "Courier New", Courier, monospace; font-size: 9pt; }
+    .bold { font-weight: 700; }
+    .sml { font-size: 8.5pt; color: #444; }
+
+    /* ── Status badges ────────────────────────────────────────────────────── */
+    .status-ok  { color: #166534; font-weight: 700; }
+    .status-mid { color: #92400e; font-weight: 700; }
+    .status-bad { color: #991b1b; font-weight: 700; }
+
+    /* ── Sub-heading ──────────────────────────────────────────────────────── */
+    .sub-heading {
+      font-size: 11pt; font-weight: 700; font-family: sans-serif;
+      margin: 20px 0 8px; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px;
+    }
+
+    /* ── Certification box ────────────────────────────────────────────────── */
+    .cert-box {
+      border: 1px solid #ccc; padding: 14px 18px; background: #fafafa;
+      font-size: 9.5pt; line-height: 1.65; margin-top: 16px;
+    }
+    .cert-box strong { font-family: sans-serif; }
+
+    /* ── Footer (on screen and in print) ─────────────────────────────────── */
+    .lit-footer {
+      margin-top: 48px; padding-top: 14px; border-top: 1px solid #bbb;
+      font-size: 8.5pt; color: #555; line-height: 1.6; font-style: italic;
+    }
+    @media print {
+      .lit-footer {
+        position: fixed; bottom: 0.4in; left: 1in; right: 1in;
+        font-size: 8pt;
+      }
+    }
+
+    /* ── Score history chip list ──────────────────────────────────────────── */
+    .score-list { font-family: monospace; font-size: 8.5pt; word-break: break-all; }
+  </style>
+</head>
+<body>
+
+<!-- Print bar (screen only) -->
+<div class="no-print print-bar">
+  <p><strong>Konduct Litigation Compliance Package</strong> · To save as PDF: <strong>Mac</strong> ⌘+P → Save as PDF &nbsp;|&nbsp; <strong>Windows</strong> Ctrl+P → Save as PDF</p>
+  <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+</div>
+
+<div class="lit-page">
+
+  <!-- ── Cover ─────────────────────────────────────────────────────────── -->
+  <div class="cover">
+    <div class="cover-logo">⚖️ Konduct</div>
+    <div class="cover-doc-type">Litigation Compliance Package</div>
+    <div class="cover-platform">{{ platform_name }}</div>
+    <div class="cover-date">Generated: {{ pkg.generated_at }}</div>
+    <div class="cover-confidential">Confidential — Attorney-Client Privileged</div>
+    <div class="cover-export-id">Export ID: {{ pkg.export_id }}</div>
+  </div>
+
+  <!-- ── GOVERN ────────────────────────────────────────────────────────── -->
+  <div class="lit-section">
+    <div class="section-num">Section 1</div>
+    <div class="section-title">GOVERN — Pre-Commitment Record</div>
+    <p class="section-desc">{{ pkg.records.GOVERN.statement }}</p>
+
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th style="width:6%">Key</th>
+          <th style="width:20%">Metric</th>
+          <th style="width:24%">Definition</th>
+          <th style="width:8%">Adult Thr.</th>
+          <th style="width:8%">Minor Thr.</th>
+          <th style="width:34%">Behavioral Science Citation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in pkg.records.GOVERN.metrics %}
+        <tr>
+          <td class="mono bold">{{ m.key }}</td>
+          <td class="bold">{{ m.name }}</td>
+          <td>{{ m.definition }}</td>
+          <td class="mono" style="text-align:center">{{ m.threshold_adult }}</td>
+          <td class="mono" style="text-align:center">{{ m.threshold_minor }}</td>
+          <td><span class="sml">{{ m.citation }}<br><em>Basis: {{ m.rationale }}</em></span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sub-heading">Legal Basis by Metric</div>
+    <table class="lit-table">
+      <thead><tr><th>Metric</th><th>Legal Basis</th></tr></thead>
+      <tbody>
+        {% for m in pkg.records.GOVERN.metrics %}
+        <tr>
+          <td class="mono bold">{{ m.key }} — {{ m.name }}</td>
+          <td class="sml">{{ m.legal_basis }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── MAP ───────────────────────────────────────────────────────────── -->
+  <div class="lit-section">
+    <div class="section-num">Section 2</div>
+    <div class="section-title">MAP — Risk Pathway Analysis</div>
+    <p class="section-desc">Traceable causal chain from platform design feature to documented psychological harm, per metric. Audit risk score: <strong>{{ pkg.records.MAP.overall_risk_score }}/100</strong> ({{ pkg.records.MAP.overall_risk_level }}).</p>
+
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th style="width:7%">Metric</th>
+          <th style="width:20%">Feature</th>
+          <th style="width:22%">Mechanism</th>
+          <th style="width:22%">Documented Harm</th>
+          <th style="width:15%">Laws Implicated</th>
+          <th style="width:14%">Audit Flag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in pkg.records.MAP.metrics %}
+        <tr>
+          <td class="mono bold">{{ m.metric }}</td>
+          <td class="sml">{{ m.pathway.feature }}</td>
+          <td class="sml">{{ m.pathway.mechanism }}</td>
+          <td class="sml">{{ m.pathway.harm }}</td>
+          <td class="sml">{{ m.laws_implicated | join(', ') }}</td>
+          <td>
+            {% if m.flagged_by_audit %}
+              <span class="status-bad bold">FLAGGED</span><br>
+              <span class="sml">{{ m.audit_severity }} · {{ m.audit_pattern_name }}</span>
+            {% else %}
+              <span class="status-ok">Not flagged</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sub-heading">Current User Readings by Metric</div>
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>User</th>
+          <th>Age</th>
+          <th>Type</th>
+          <th>Value</th>
+          <th>Threshold</th>
+          <th>Triggered?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in pkg.records.MAP.metrics %}
+          {% for r in m.current_user_readings %}
+          <tr>
+            {% if loop.first %}<td class="mono bold" rowspan="{{ m.current_user_readings | length }}">{{ m.metric }}</td>{% endif %}
+            <td>{{ r.name }}</td>
+            <td style="text-align:center">{{ r.age }}</td>
+            <td>{{ 'Minor' if r.is_minor else 'Adult' }}</td>
+            <td class="mono" style="text-align:center">{{ r.value }}</td>
+            <td class="mono" style="text-align:center">{{ r.threshold }}</td>
+            <td>
+              {% if r.triggered %}
+                <span class="status-bad">YES</span>
+              {% else %}
+                <span class="status-ok">No</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── MEASURE ───────────────────────────────────────────────────────── -->
+  <div class="lit-section">
+    <div class="section-num">Section 3</div>
+    <div class="section-title">MEASURE — Per-User Outcome Record</div>
+    <p class="section-desc">Before/after measurement of intervention effectiveness for each monitored user.</p>
+
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Age</th>
+          <th>Type</th>
+          <th>Sessions</th>
+          <th>Peak Score</th>
+          <th>Current Score</th>
+          <th>Intervention</th>
+          <th>Score at Trigger</th>
+          <th>Score +3 Sessions</th>
+          <th>Delta</th>
+          <th>Outcome</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in pkg.records.MEASURE.users %}
+        <tr>
+          <td class="bold">{{ u.name }}</td>
+          <td style="text-align:center">{{ u.age }}</td>
+          <td>{{ 'Minor' if u.is_minor else 'Adult' }}</td>
+          <td style="text-align:center">{{ u.sessions_recorded }}</td>
+          <td class="mono" style="text-align:center">{{ u.peak_risk_score }}</td>
+          <td class="mono" style="text-align:center">{{ u.current_risk_score }}</td>
+          <td>
+            {% if u.intervention.fired %}
+              <span class="status-bad">Session {{ u.intervention.session_triggered }}</span>
+            {% else %}
+              <span class="status-ok">Not triggered</span>
+            {% endif %}
+          </td>
+          <td class="mono" style="text-align:center">{{ u.intervention.score_at_trigger or '—' }}</td>
+          <td class="mono" style="text-align:center">{{ u.intervention.score_3_sessions_post or '—' }}</td>
+          <td class="mono" style="text-align:center">
+            {% if u.intervention.before_after_delta is not none %}
+              {{ u.intervention.before_after_delta }}
+            {% else %}—{% endif %}
+          </td>
+          <td class="sml">{{ u.intervention.outcome | replace('_', ' ') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sub-heading">Score History per User</div>
+    <table class="lit-table">
+      <thead><tr><th>User</th><th>Score History (session 1 → most recent)</th></tr></thead>
+      <tbody>
+        {% for u in pkg.records.MEASURE.users %}
+        <tr>
+          <td class="bold">{{ u.name }}</td>
+          <td class="score-list">{{ u.score_history | join(', ') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% set minor_users = pkg.records.MEASURE.users | selectattr('is_minor') | list %}
+    {% if minor_users %}
+    <div class="sub-heading">Child Safety Events</div>
+    <table class="lit-table">
+      <thead><tr><th>User</th><th>Session</th><th>Risk Score</th><th>Laws Triggered</th></tr></thead>
+      <tbody>
+        {% set found_events = [] %}
+        {% for u in minor_users %}
+          {% if u.child_safety_events %}
+            {% for ev in u.child_safety_events %}
+            <tr>
+              <td class="bold">{{ u.name }}</td>
+              <td style="text-align:center">{{ ev.session }}</td>
+              <td class="mono" style="text-align:center">{{ ev.risk_score }}</td>
+              <td class="sml">{{ ev.laws_triggered | join(', ') }}</td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+        {% if not found_events %}
+        <tr><td colspan="4" style="color:#555;font-style:italic;text-align:center;padding:12px">No child safety events recorded in this session.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+  <!-- ── MANAGE ────────────────────────────────────────────────────────── -->
+  <div class="lit-section">
+    <div class="section-num">Section 4</div>
+    <div class="section-title">MANAGE — Intervention &amp; Incident Log</div>
+    <p class="section-desc">Append-only intervention record. All interventions executed within the pre-committed threshold framework.</p>
+
+    {% if pkg.records.MANAGE.intervention_log %}
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Type</th>
+          <th>Triggered Session</th>
+          <th>Interventions Applied</th>
+          <th>Score at Trigger</th>
+          <th>Current Score</th>
+          <th>Net Change</th>
+          <th>Outcome</th>
+          <th>Compliance Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in pkg.records.MANAGE.intervention_log %}
+        <tr>
+          <td class="bold">{{ entry.user_name }}</td>
+          <td>{{ 'Minor' if entry.is_minor else 'Adult' }}</td>
+          <td style="text-align:center">{{ entry.intervention_session }}</td>
+          <td class="sml">{{ entry.interventions_applied | join(', ') | replace('_', ' ') }}</td>
+          <td class="mono" style="text-align:center">{{ entry.score_at_trigger or '—' }}</td>
+          <td class="mono" style="text-align:center">{{ entry.current_score or '—' }}</td>
+          <td class="mono" style="text-align:center">{{ entry.net_score_change if entry.net_score_change is not none else '—' }}</td>
+          <td class="sml">{{ entry.outcome }}</td>
+          <td class="sml">{{ entry.compliance_note }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="section-desc" style="font-style:italic;color:#555">No interventions have been triggered in the current session.</p>
+    {% endif %}
+
+    <div class="cert-box">
+      <strong>Legal Certification:</strong> {{ pkg.records.MANAGE.legal_certification.statement }}
+      NIST AI RMF Functions Covered: {{ pkg.records.MANAGE.legal_certification.nist_ai_rmf_functions_covered | join(', ') }}.
+      Generated by {{ pkg.records.MANAGE.legal_certification.generated_by }}.
+    </div>
+  </div>
+
+  <!-- ── NIST RMF ───────────────────────────────────────────────────────── -->
+  <div class="lit-section">
+    <div class="section-num">Section 5</div>
+    <div class="section-title">NIST AI Risk Management Framework — Compliance Assessment</div>
+    <p class="section-desc">Assessment against NIST AI RMF 1.0 (2023) four core functions. Reference: NIST AI RMF Playbook, January 2023.</p>
+
+    <table class="lit-table">
+      <thead>
+        <tr>
+          <th style="width:12%">Function</th>
+          <th style="width:22%">Requirement</th>
+          <th style="width:16%">Status</th>
+          <th>Assessment Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono bold">GOVERN</td>
+          <td>Pre-commitment to behavioral safety objectives with documented thresholds</td>
+          <td>
+            {% if pkg.nist_rmf_status.GOVERN.status == 'COMPLIANT' %}
+              <span class="status-ok">COMPLIANT</span>
+            {% elif pkg.nist_rmf_status.GOVERN.status == 'PARTIAL' %}
+              <span class="status-mid">PARTIAL</span>
+            {% else %}
+              <span class="status-bad">NON-COMPLIANT</span>
+            {% endif %}
+          </td>
+          <td>{{ pkg.nist_rmf_status.GOVERN.detail }}</td>
+        </tr>
+        <tr>
+          <td class="mono bold">MAP</td>
+          <td>Traceable risk pathway: feature → mechanism → harm</td>
+          <td>
+            {% if pkg.nist_rmf_status.MAP.status == 'COMPLIANT' %}
+              <span class="status-ok">COMPLIANT</span>
+            {% elif pkg.nist_rmf_status.MAP.status == 'PARTIAL' %}
+              <span class="status-mid">PARTIAL</span>
+            {% else %}
+              <span class="status-bad">NON-COMPLIANT</span>
+            {% endif %}
+          </td>
+          <td>{{ pkg.nist_rmf_status.MAP.detail }}{% if pkg.nist_rmf_status.MAP.triggered_metrics %} Triggered: {{ pkg.nist_rmf_status.MAP.triggered_metrics | join(', ') }}.{% endif %}</td>
+        </tr>
+        <tr>
+          <td class="mono bold">MEASURE</td>
+          <td>Before/after measurement of intervention effectiveness</td>
+          <td>
+            {% if pkg.nist_rmf_status.MEASURE.status == 'COMPLIANT' %}
+              <span class="status-ok">COMPLIANT</span>
+            {% elif pkg.nist_rmf_status.MEASURE.status == 'PARTIAL' %}
+              <span class="status-mid">PARTIAL</span>
+            {% else %}
+              <span class="status-bad">NON-COMPLIANT</span>
+            {% endif %}
+          </td>
+          <td>{{ pkg.nist_rmf_status.MEASURE.detail }}</td>
+        </tr>
+        <tr>
+          <td class="mono bold">MANAGE</td>
+          <td>Living, append-only remediation record with child safety incident log</td>
+          <td>
+            {% if pkg.nist_rmf_status.MANAGE.status == 'COMPLIANT' %}
+              <span class="status-ok">COMPLIANT</span>
+            {% elif pkg.nist_rmf_status.MANAGE.status == 'PARTIAL' %}
+              <span class="status-mid">PARTIAL</span>
+            {% else %}
+              <span class="status-bad">NON-COMPLIANT</span>
+            {% endif %}
+          </td>
+          <td>{{ pkg.nist_rmf_status.MANAGE.detail }}{% if pkg.nist_rmf_status.MANAGE.child_safety_events %} Child safety events logged: {{ pkg.nist_rmf_status.MANAGE.child_safety_events }}.{% endif %}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    {% if pkg.audit_results and not pkg.audit_results.note %}
+    <div class="sub-heading">Feature Audit Summary</div>
+    <p style="font-size:10pt;line-height:1.65;">{{ pkg.audit_results.summary }}</p>
+    <p style="font-size:9.5pt;color:#444;margin-top:8px">
+      Risk Score: <strong>{{ pkg.audit_results.risk_score }}/100</strong> ·
+      Risk Level: <strong>{{ pkg.audit_results.risk_level }}</strong> ·
+      Patterns Flagged: <strong>{{ pkg.audit_results.flagged_patterns | length }}</strong>
+    </p>
+    {% endif %}
+  </div>
+
+  <!-- ── Footer ────────────────────────────────────────────────────────── -->
+  <div class="lit-footer">
+    Generated by Konduct v1.0 — Behavioral Algorithm Compliance Auditor · Export ID: {{ pkg.export_id }} · {{ pkg.generated_at }}<br>
+    {{ pkg.disclaimer }}<br>
+    <em>This document is machine-generated and should be reviewed by qualified legal counsel before use in any legal proceeding.
+    Frameworks referenced: KOSA, EU DSA, MA 93A, CCPA/CPRA, UK Online Safety Act, COPPA, NIST AI RMF 1.0.</em>
+  </div>
+
+</div><!-- /lit-page -->
+</body>
+</html>

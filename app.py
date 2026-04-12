@@ -1,20 +1,24 @@
 """
-AlgoGuard — FastAPI Backend
+Konduct — FastAPI Backend
 Endpoints:
-  GET  /              → dashboard
-  GET  /api/state     → current state of all 3 synthetic users
-  POST /api/tick      → advance all users one session
-  POST /api/reset     → reset all users to session 0
-  POST /api/analyze   → Claude-powered feature audit
-  GET  /report/{uid}  → printable audit report for one user
+  GET  /                              → redirect to /landing
+  GET  /landing                       → landing page
+  GET  /dashboard                     → main dashboard
+  GET  /api/state                     → current state of all 3 synthetic users
+  POST /api/tick                      → advance all users one session
+  POST /api/reset                     → reset all users to session 0
+  POST /api/analyze                   → Claude-powered feature audit
+  GET  /report/{platform_name}        → printable audit report
+  GET  /api/litigation-export         → JSON litigation package (download)
+  GET  /litigation-report/{name}      → printable HTML litigation report (PDF)
 """
 
 import os
 import json
 import uuid
 from datetime import datetime, timezone
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
@@ -24,9 +28,11 @@ from simulator import tick_all, get_all_states, reset_all, USERS
 
 load_dotenv()
 
-app = FastAPI(title="AlgoGuard")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = FastAPI(title="Konduct")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -35,7 +41,19 @@ _latest_states: list = []
 _audit_results: dict = {}
 
 
-@app.get("/", response_class=HTMLResponse)
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.get("/", response_class=RedirectResponse, status_code=301)
+async def root():
+    return "/landing"
+
+
+@app.get("/landing", response_class=HTMLResponse)
+async def landing(request: Request):
+    return templates.TemplateResponse(request=request, name="landing.html", context={})
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     states = get_all_states()
     return templates.TemplateResponse(request=request, name="dashboard.html", context={"users": states})
@@ -67,7 +85,7 @@ async def api_analyze(request: Request):
     platform_name = body.get("platform_name", "Unknown Platform")
     features = body.get("features", "")
 
-    prompt = f"""You are AlgoGuard, an AI compliance auditor specializing in social media algorithm addiction risk.
+    prompt = f"""You are Konduct, an AI compliance auditor specializing in social media algorithm addiction risk.
 
 Analyze the following platform features for addiction-risk patterns using the RIS (Reflexive/Intentional Spectrum) framework.
 
@@ -111,7 +129,6 @@ Respond ONLY with valid JSON in this exact format:
     )
 
     raw = message.content[0].text.strip()
-    # Strip markdown code fences if present
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):
@@ -131,8 +148,10 @@ async def report(request: Request, platform_name: str):
     })
 
 
-@app.get("/api/litigation-export")
-async def litigation_export(platform_name: str = "Unknown Platform"):
+# ── Shared litigation data builder ────────────────────────────────────────────
+
+def _build_litigation_data(platform_name: str) -> dict:
+    """Build the full litigation data package — used by both JSON export and HTML report."""
     audit = _audit_results.get(platform_name, {})
     timestamp = datetime.now(timezone.utc).isoformat()
     export_id = str(uuid.uuid4())
@@ -147,7 +166,7 @@ async def litigation_export(platform_name: str = "Unknown Platform"):
         "export_id": export_id,
         "statement": (
             "The following thresholds were defined prior to any risk event, based on "
-            "published behavioral science research, and represent AlgoGuard's pre-committed "
+            "published behavioral science research, and represent Konduct's pre-committed "
             "safety framework. They have not been modified retroactively."
         ),
         "ris_framework": {
@@ -443,22 +462,96 @@ async def litigation_export(platform_name: str = "Unknown Platform"):
                 "for legal discovery under KOSA, DSA, MA 93A, UK Online Safety Act, and CCPA/CPRA."
             ),
             "nist_ai_rmf_functions_covered": ["GOVERN", "MAP", "MEASURE", "MANAGE"],
-            "generated_by": "AlgoGuard v1.0 — Behavioral Algorithm Compliance Auditor",
+            "generated_by": "Konduct v1.0 — Behavioral Algorithm Compliance Auditor",
         },
     }
 
-    # ── Assemble package ─────────────────────────────────────────────────────────
-    package = {
-        "package_type": "AlgoGuard Litigation Export",
+    # ── Current metric snapshot ──────────────────────────────────────────────────
+    current_metric_snapshot = []
+    for s in states:
+        current_metric_snapshot.append({
+            "user_id": s["user_id"],
+            "name": s["name"],
+            "age": s["age"],
+            "is_minor": s["is_minor"],
+            "session": s["session"],
+            "risk_score": s["risk_score"],
+            "risk_level": s["risk_level"],
+            "metrics": {
+                k: {"value": v["value"], "threshold": v["threshold"], "triggered": v["triggered"]}
+                for k, v in s.get("metrics", {}).items()
+            },
+        })
+
+    # ── NIST RMF live status ─────────────────────────────────────────────────────
+    any_recovering = any(s.get("recovering") for s in states)
+    any_intervened = any(s.get("intervention_fired") for s in states)
+    child_events_count = sum(1 for s in states if s.get("is_child_safety_event"))
+    triggered_counts: set = set()
+    for s in states:
+        for k, v in s.get("metrics", {}).items():
+            if v.get("triggered"):
+                triggered_counts.add(k)
+    n_triggered = len(triggered_counts)
+
+    nist_rmf_status = {
+        "GOVERN": {
+            "status": "COMPLIANT" if audit else "PARTIAL",
+            "detail": (
+                "Feature audit completed — pre-committed safety policy documented"
+                if audit else
+                "No feature audit performed yet; threshold governance active"
+            ),
+        },
+        "MAP": {
+            "status": "COMPLIANT" if n_triggered == 0 else ("PARTIAL" if n_triggered < 5 else "NON_COMPLIANT"),
+            "triggered_metrics": list(triggered_counts),
+            "detail": (
+                f"{n_triggered} risk metric(s) currently breaching threshold across monitored users"
+                if n_triggered else "No metrics breaching threshold"
+            ),
+        },
+        "MEASURE": {
+            "status": "COMPLIANT" if any_recovering else ("PARTIAL" if any_intervened else "NON_COMPLIANT"),
+            "detail": (
+                "Intervention active and score recovery in progress"
+                if any_recovering else (
+                    "Intervention triggered; awaiting post-intervention score delta"
+                    if any_intervened else
+                    "No interventions triggered yet"
+                )
+            ),
+        },
+        "MANAGE": {
+            "status": "COMPLIANT" if child_events_count == 0 else ("PARTIAL" if child_events_count <= 2 else "NON_COMPLIANT"),
+            "child_safety_events": child_events_count,
+            "detail": (
+                "No active child-safety events"
+                if child_events_count == 0 else
+                f"{child_events_count} child-safety event(s) logged — elevated KOSA/COPPA/UK-OSA duty of care"
+            ),
+        },
+    }
+
+    return {
+        "package_type": "Konduct Litigation Export",
         "version": "1.0",
         "export_id": export_id,
         "generated_at": timestamp,
         "platform": platform_name,
         "nist_ai_rmf_version": "1.0 (2023)",
+        "disclaimer": (
+            "No algorithmic intervention guarantees elimination of harm. This system provides "
+            "good-faith structural remediation consistent with the pharmaceutical industry standard "
+            "for post-market safety monitoring. Adverse outcomes may occur even within a properly "
+            "functioning safety system."
+        ),
         "legal_notice": (
-            "This document is a machine-generated compliance record produced by AlgoGuard. "
+            "This document is a machine-generated compliance record produced by Konduct. "
             "It should be reviewed by qualified legal counsel before use in any legal proceeding."
         ),
+        "current_metric_snapshot": current_metric_snapshot,
+        "nist_rmf_status": nist_rmf_status,
         "records": {
             "GOVERN": govern,
             "MAP": map_record,
@@ -470,11 +563,26 @@ async def litigation_export(platform_name: str = "Unknown Platform"):
         },
     }
 
+
+# ── Litigation endpoints ───────────────────────────────────────────────────────
+
+@app.get("/api/litigation-export")
+async def litigation_export(platform_name: str = "Unknown Platform"):
+    package = _build_litigation_data(platform_name)
     date_str = datetime.now().strftime("%Y%m%d")
     safe_name = platform_name.lower().replace(" ", "-").replace("/", "-")
-    filename = f"algoguard-litigation-export-{safe_name}-{date_str}.json"
+    filename = f"konduct-litigation-{safe_name}-{date_str}.json"
     return Response(
         content=json.dumps(package, indent=2),
         media_type="application/json",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@app.get("/litigation-report/{platform_name}", response_class=HTMLResponse)
+async def litigation_report_view(request: Request, platform_name: str):
+    pkg = _build_litigation_data(platform_name)
+    return templates.TemplateResponse(request=request, name="litigation.html", context={
+        "pkg": pkg,
+        "platform_name": platform_name,
+    })

@@ -429,6 +429,126 @@ input[type="text"]:focus, textarea:focus {
 }
 .report-empty { padding: 40px; text-align: center; color: #64748b; }
 
+/* ── Tab navigation ──────────────────────────────────────────────────────── */
+.tab-nav {
+  display: flex; align-items: stretch; gap: 2px; flex: 1;
+  border-bottom: none;
+}
+.tab-btn {
+  background: none; border: none; border-bottom: 3px solid transparent;
+  padding: 0 16px; height: 56px; font-size: 13px; font-weight: 600;
+  color: #64748b; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.tab-btn:hover:not(:disabled) { color: #1e3a8a; border-bottom-color: #c7d2fe; }
+.tab-active { color: #1e3a8a !important; border-bottom-color: #1e3a8a !important; }
+.tab-locked { color: #cbd5e1 !important; cursor: not-allowed; }
+.tab-badge {
+  display: inline-block; background: #22c55e; color: #fff;
+  border-radius: 20px; padding: 1px 7px; font-size: 10px; font-weight: 700;
+}
+
+/* ── Litigation wrap ─────────────────────────────────────────────────────── */
+.litigation-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.litigation-sub  { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+
+/* ── Card header row (new layout) ────────────────────────────────────────── */
+.card-header-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 10px;
+}
+.card-level-pill {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+
+/* ── Card chart area (stock-chart style) ─────────────────────────────────── */
+.card-chart-area { margin-bottom: 8px; }
+.card-score-row  {
+  display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;
+}
+.card-score-num   { font-size: 28px; font-weight: 800; line-height: 1; }
+.card-score-label { font-size: 12px; font-weight: 700; letter-spacing: 0.03em; }
+.chart-placeholder {
+  font-size: 11px; color: #94a3b8; padding: 8px 0; text-align: center;
+}
+.score-chart-svg {
+  display: block; width: 100%; height: auto;
+  overflow: visible;
+}
+
+/* ── NIST RMF Live Status Panel ──────────────────────────────────────────── */
+.rmf-panel {
+  background: #fff; border-radius: 12px; padding: 22px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-top: 24px;
+}
+.rmf-section-header { margin-bottom: 16px; }
+.rmf-panel-title {
+  font-size: 14px; font-weight: 700; color: #1e293b; letter-spacing: -0.1px;
+}
+.rmf-panel-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.rmf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) { .rmf-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px)  { .rmf-grid { grid-template-columns: 1fr; } }
+
+.rmf-col {
+  border-top: 3px solid #e2e8f0; border-radius: 10px; padding: 16px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+  user-select: none;
+  outline: none;
+}
+.rmf-col:hover  { box-shadow: 0 6px 20px rgba(0,0,0,0.10); transform: translateY(-2px); }
+.rmf-col:active { transform: translateY(0); }
+.rmf-col:focus-visible { box-shadow: 0 0 0 3px rgba(30,58,138,0.25); }
+
+.rmf-fn {
+  font-size: 13px; font-weight: 800;
+  font-family: "SF Mono", Monaco, monospace;
+  color: #1e3a8a; margin-bottom: 10px; letter-spacing: 0.03em;
+}
+
+/* status badge (pill inside card) */
+.rmf-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  margin-bottom: 10px;
+}
+.rmf-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rmf-badge-text { font-size: 11px; font-weight: 700; line-height: 1; }
+
+.rmf-detail {
+  font-size: 11.5px; color: #475569; line-height: 1.55;
+}
+.rmf-view-btn {
+  display: inline-block; margin-top: 12px;
+  font-size: 11px; font-weight: 600; color: #1e3a8a;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.rmf-col:hover .rmf-view-btn { color: #1d4ed8; }
+
+/* colour variants — border-top, badge bg/text, dot */
+.rmf-green { border-top-color: #22c55e; }
+.rmf-green .rmf-badge { background: #f0fdf4; }
+.rmf-green .rmf-badge-text { color: #16a34a; }
+.rmf-green .rmf-dot  { background: #22c55e; }
+
+.rmf-amber { border-top-color: #f59e0b; }
+.rmf-amber .rmf-badge { background: #fffbeb; }
+.rmf-amber .rmf-badge-text { color: #d97706; }
+.rmf-amber .rmf-dot  { background: #f59e0b; }
+
+.rmf-red { border-top-color: #ef4444; }
+.rmf-red .rmf-badge { background: #fef2f2; }
+.rmf-red .rmf-badge-text { color: #dc2626; }
+.rmf-red .rmf-dot   { background: #ef4444; }
+
 /* ── Print styles ────────────────────────────────────────────────────────── */
 @media print {
   header, .back-btn, .audit-actions, .explainer-banner, .no-print { display: none !important; }

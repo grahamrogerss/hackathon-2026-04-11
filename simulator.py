@@ -1,5 +1,5 @@
 """
-AlgoGuard — Synthetic User Telemetry Simulator
+Konduct — Synthetic User Telemetry Simulator
 Three behavioral archetypes derived from published research:
   Maya (16, minor)  — Twenge et al. (2018), 85th percentile adolescent compulsive use
   James (28, adult) — Oulasvirta et al. (2012), median borderline adult user
@@ -54,11 +54,19 @@ def compute_metrics(user: UserState) -> Dict[str, Any]:
         # Maya (16, minor): all 5 metrics already dangerous at session 1, worsen slightly.
         # Thresholds (minor): SVG>60, DDR<0.25, RLI<2, NSCR>0.50, ACS>0.40 — all breach immediately.
         if not user.intervention_fired:
-            svg  = _jitter(min(98, 85 + (s - 1) * 1.5))
-            ddr  = _jitter(max(0.03, 0.06 - (s - 1) * 0.003))
-            rli  = max(1, round(_jitter(max(0.5, 0.8 - (s - 1) * 0.05))))
-            nscr = min(0.95, _jitter(0.75 + (s - 1) * 0.015))
-            acs  = min(0.92, _jitter(0.65 + (s - 1) * 0.015))
+            if s == 1:
+                # Hardcoded session-1 baseline — all 5 minor thresholds definitively breached.
+                svg  = 88.0    # threshold 60 — 47% over
+                ddr  = 0.07    # threshold 0.25 — reflexive cycling, no content processing
+                rli  = 1       # threshold 2 — compulsive re-entry within 1 minute
+                nscr = 0.78    # threshold 0.50 — notification-conditioned response
+                acs  = 0.66    # threshold 0.40 — severe affective drift
+            else:
+                svg  = _jitter(min(98, 85 + (s - 1) * 1.5))
+                ddr  = _jitter(max(0.03, 0.06 - (s - 1) * 0.003))
+                rli  = max(1, round(_jitter(max(0.5, 0.8 - (s - 1) * 0.05))))
+                nscr = min(0.95, _jitter(0.75 + (s - 1) * 0.015))
+                acs  = min(0.92, _jitter(0.65 + (s - 1) * 0.015))
         else:
             # Exponential recovery toward safer zone
             decay = math.exp(-0.35 * post)

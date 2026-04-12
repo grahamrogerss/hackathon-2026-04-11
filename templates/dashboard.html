@@ -3,35 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AlgoGuard — Behavioral Risk Dashboard</title>
+  <title>Konduct — Behavioral Risk Dashboard</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<!-- ── App Header ─────────────────────────────────────────────────────────── -->
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
 <header>
-  <div class="logo">🛡️ AlgoGuard</div>
-  <nav class="breadcrumb" id="breadcrumb">
-    <span class="bc-root bc-root-active" onclick="navigate('dashboard')">Dashboard</span>
-    <span class="bc-sep"  id="bc-sep"  style="display:none">›</span>
-    <span class="bc-leaf" id="bc-leaf" style="display:none"></span>
+  <a class="logo" href="/landing" style="text-decoration:none">⚖️ Konduct</a>
+  <nav class="tab-nav" id="tab-nav">
+    <button class="tab-btn tab-active" id="tab-live"         onclick="switchTab('live')">Live Dashboard</button>
+    <button class="tab-btn"            id="tab-audit-form"   onclick="switchTab('audit-form')">Feature Audit</button>
+    <button class="tab-btn tab-locked" id="tab-audit-results" onclick="switchTab('audit-results')" disabled>Audit Results</button>
   </nav>
   <div class="header-controls">
-    <button onclick="downloadLitigationPackage()" class="btn-litigation" title="Download full NIST RMF compliance record">⬇ Litigation Package</button>
+    <div class="litigation-wrap">
+      <button onclick="openLitigationReport()" class="btn-litigation" id="btn-lit">⬇ Litigation Package</button>
+      <div class="litigation-sub">NIST RMF-mapped · Court-ready</div>
+    </div>
     <button onclick="tick()"     class="btn-primary">▶ Next Session</button>
     <button onclick="resetAll()" class="btn-secondary">↺ Reset</button>
   </div>
 </header>
 
 <!-- ══════════════════════════════════════════
-     PAGE: DASHBOARD
+     TAB 1: LIVE DASHBOARD
 ══════════════════════════════════════════ -->
-<div id="page-dashboard" class="page active">
+<div id="page-live" class="page active">
   <main class="main-container">
 
     <div class="explainer-banner">
       <div class="explainer-top">
-        <span><strong>What is this?</strong> AlgoGuard monitors 5 behavioral metrics derived from the RIS framework to detect compulsive-use patterns in real time. Three synthetic users simulate published research archetypes.</span>
+        <span><strong>What is this?</strong> Konduct monitors 5 behavioral metrics derived from the RIS framework to detect compulsive-use patterns in real time. Three synthetic users simulate published research archetypes.</span>
         <button class="explainer-toggle" onclick="toggleExplainer()">Learn more ▾</button>
       </div>
       <div id="explainer-body" class="explainer-body" hidden>
@@ -51,19 +54,35 @@
         <p class="subtitle">Synthetic behavioral telemetry · Auto-updates every 3s · <em>Click any card for full analysis</em></p>
       </div>
       <div class="risk-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>LOW — Normal use</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>MEDIUM — Borderline</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>HIGH — Intervene</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>LOW &lt; 40</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>MEDIUM 40–69</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>HIGH ≥ 70</span>
       </div>
     </div>
 
     <div class="user-grid" id="user-grid"></div>
 
-    <!-- Audit form -->
-    <div class="section-header" style="margin-top:48px">
+    <!-- NIST RMF Live Status Panel -->
+    <div class="rmf-panel">
+      <div class="rmf-section-header">
+        <div class="rmf-panel-title">NIST AI RMF — Live Compliance Status</div>
+        <div class="rmf-panel-sub">Updates with each session tick · Click any function to view full assessment</div>
+      </div>
+      <div class="rmf-grid" id="rmf-panel"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 2: FEATURE AUDIT
+══════════════════════════════════════════ -->
+<div id="page-audit-form" class="page">
+  <main class="main-container">
+    <div class="section-header">
       <div>
         <h2>Feature Compliance Audit</h2>
-        <p class="subtitle">Describe your platform features — AlgoGuard maps them to RIS risk patterns and legal exposure</p>
+        <p class="subtitle">Describe your platform features — Konduct maps them to RIS risk patterns and legal exposure using Claude AI</p>
       </div>
     </div>
     <div class="audit-form-card">
@@ -73,61 +92,103 @@
       </div>
       <div class="form-row">
         <label class="form-label">Feature Description</label>
-        <textarea id="features-input" rows="5"
+        <textarea id="features-input" rows="6"
           placeholder="Describe your features, e.g.: infinite scroll with no end state, autoplay video at 200ms, 47 push notifications/day, streak system, engagement-optimized ranking..."></textarea>
       </div>
       <button onclick="runAudit()" class="btn-primary btn-large" id="audit-btn">Analyze Features</button>
     </div>
-
   </main>
 </div>
 
 <!-- ══════════════════════════════════════════
-     PAGE: USER DETAIL
+     TAB 3: AUDIT RESULTS
+══════════════════════════════════════════ -->
+<div id="page-audit-results" class="page">
+  <main class="main-container">
+    <div id="audit-content">
+      <div style="padding:60px;text-align:center;color:#94a3b8">Run a Feature Audit to see results here.</div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════
+     USER DETAIL (non-tab overlay)
 ══════════════════════════════════════════ -->
 <div id="page-detail" class="page">
   <main class="main-container">
-    <button class="back-btn" onclick="navigate('dashboard')">← Back to Dashboard</button>
+    <button class="back-btn" onclick="switchTab('live')">← Back to Dashboard</button>
     <div id="detail-content"></div>
-  </main>
-</div>
-
-<!-- ══════════════════════════════════════════
-     PAGE: AUDIT RESULTS
-══════════════════════════════════════════ -->
-<div id="page-audit" class="page">
-  <main class="main-container">
-    <button class="back-btn" onclick="navigate('dashboard')">← Back to Dashboard</button>
-    <div id="audit-content"></div>
   </main>
 </div>
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let _users = [];
+let _users        = [];
 let _selectedUserId = null;
+let _auditResult  = null;
+let _auditFailed  = false;
+let _currentTab   = 'live';
 
-// ── Routing ───────────────────────────────────────────────────────────────────
-function navigate(page, leafLabel) {
+// ── Tab routing ────────────────────────────────────────────────────────────────
+function switchTab(tabId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  const sep  = document.getElementById('bc-sep');
-  const leaf = document.getElementById('bc-leaf');
-  const root = document.querySelector('.bc-root');
-  if (page === 'dashboard') {
-    sep.style.display = leaf.style.display = 'none';
-    root.classList.add('bc-root-active');
-  } else {
-    sep.style.display = leaf.style.display = 'inline';
-    leaf.textContent = leafLabel || (page === 'audit' ? 'Audit Results' : 'Detail');
-    root.classList.remove('bc-root-active');
-  }
+  document.getElementById('page-' + tabId).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+  const btn = document.getElementById('tab-' + tabId);
+  if (btn) btn.classList.add('tab-active');
+  _currentTab = tabId;
+}
+
+function unlockAuditTab() {
+  const btn = document.getElementById('tab-audit-results');
+  btn.disabled = false;
+  btn.classList.remove('tab-locked');
+  btn.innerHTML = 'Audit Results <span class="tab-badge">Ready</span>';
 }
 
 // ── Colour helpers ─────────────────────────────────────────────────────────────
 const riskColor = l => l==='HIGH'?'#ef4444':l==='MEDIUM'?'#f59e0b':'#22c55e';
 const riskBg    = l => l==='HIGH'?'#fef2f2':l==='MEDIUM'?'#fffbeb':'#f0fdf4';
 const levelOf   = s => s>=70?'HIGH':s>=40?'MEDIUM':'LOW';
+
+// ── SVG Line Chart (stock-chart style) ────────────────────────────────────────
+function scoreLineChart(hist, userId) {
+  const pts = hist.slice(-20);
+  if (pts.length < 2) {
+    return '<div class="chart-placeholder">Collecting data…</div>';
+  }
+  const W = 320, H = 78;
+  const padL = 22, padR = 6, padT = 8, padB = 4;
+  const cw = W - padL - padR, ch = H - padT - padB;
+  const n  = pts.length;
+  const last = pts[n-1];
+  const color = riskColor(levelOf(last));
+
+  const fy = s => (padT + ch * (1 - Math.min(100, Math.max(0, s)) / 100)).toFixed(2);
+  const fx = i => (padL + (i / Math.max(1, n - 1)) * cw).toFixed(2);
+
+  const line = pts.map((s, i) => `${i === 0 ? 'M' : 'L'}${fx(i)},${fy(s)}`).join(' ');
+  const area = `${line} L${fx(n-1)},${(padT+ch).toFixed(2)} L${fx(0)},${(padT+ch).toFixed(2)} Z`;
+
+  const y40 = fy(40), y70 = fy(70);
+  const gid = 'gc' + userId.replace(/[^a-z0-9]/gi, '');
+
+  return `<svg class="score-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="${color}" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    <line x1="${padL}" y1="${y70}" x2="${W-padR}" y2="${y70}" stroke="#ef4444" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+    <line x1="${padL}" y1="${y40}" x2="${W-padR}" y2="${y40}" stroke="#f59e0b" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.55"/>
+    <text x="${padL-3}" y="${(+y70+3.5).toFixed(1)}" text-anchor="end" font-size="7" fill="#ef4444" opacity="0.75">70</text>
+    <text x="${padL-3}" y="${(+y40+3.5).toFixed(1)}" text-anchor="end" font-size="7" fill="#f59e0b" opacity="0.75">40</text>
+    <path d="${area}" fill="url(#${gid})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${fx(n-1)}" cy="${fy(last)}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+  </svg>`;
+}
 
 // ── Metric bar ─────────────────────────────────────────────────────────────────
 function metricBar(val, thr, key, hit, draining) {
@@ -138,7 +199,7 @@ function metricBar(val, thr, key, hit, draining) {
   return `<div class="metric-bar-wrap"><div class="${cls}" style="width:${pct}%;background:${hit?'#ef4444':'#22c55e'}"></div></div>`;
 }
 
-// ── Gauge SVG ──────────────────────────────────────────────────────────────────
+// ── Gauge SVG (detail page only) ──────────────────────────────────────────────
 function riskGauge(score, color) {
   const r = 68, circ = +(2*Math.PI*r).toFixed(2);
   return `<svg class="gauge-svg" viewBox="0 0 180 180">
@@ -160,7 +221,7 @@ function animateGauges() {
   });
 }
 
-// ── Metric plain-English ───────────────────────────────────────────────────────
+// ── Metric explanations ────────────────────────────────────────────────────────
 const METRIC_META = {
   SVG:  { label:'Session Velocity Gradient',         sub:'Scroll speed acceleration' },
   DDR:  { label:'Dwell-to-Dismiss Ratio',            sub:'Deliberate content engagement' },
@@ -168,7 +229,6 @@ const METRIC_META = {
   NSCR: { label:'Notification-Conditioned Response', sub:'Notification-triggered sessions' },
   ACS:  { label:'Affective Congruence Score',        sub:'Emotional content drift' },
 };
-
 function metricExplain(key, val, thr, hit, name, isMinor) {
   const tier = isMinor ? 'minor' : 'adult';
   switch(key) {
@@ -177,21 +237,21 @@ function metricExplain(key, val, thr, hit, name, isMinor) {
       : `Scroll velocity <strong>${val}</strong> is within safe range (threshold: ${thr}). No compulsive acceleration detected.`;
     case 'DDR': return hit
       ? `Very low at <strong>${val}</strong> — ${name} is swiping past content without reading it (threshold: ${thr}). This near-automatic feed cycling is a core compulsive-use signal.`
-      : `Dwell ratio <strong>${val}</strong> indicates ${name} is engaging deliberately with content before dismissing (threshold: ${thr}).`;
+      : `Dwell ratio <strong>${val}</strong> indicates ${name} is engaging deliberately before dismissing (threshold: ${thr}).`;
     case 'RLI': return hit
-      ? `${name} returned to the app within <strong>${val} min</strong> of closing it — below the ${tier} threshold of ${thr} min. Brief re-entry latency is a strong indicator of conditioned compulsive return behavior.`
-      : `Re-entry latency of <strong>${val} min</strong> is consistent with intentional, purposeful use (threshold: ${thr} min).`;
+      ? `${name} returned to the app within <strong>${val} min</strong> — below the ${tier} threshold of ${thr} min. Brief re-entry latency is a strong indicator of conditioned compulsive return.`
+      : `Re-entry latency of <strong>${val} min</strong> is consistent with intentional use (threshold: ${thr} min).`;
     case 'NSCR': return hit
-      ? `<strong>${(val*100).toFixed(0)}%</strong> of ${name}'s sessions are notification-triggered, exceeding the ${(thr*100).toFixed(0)}% threshold. The platform has successfully conditioned a reflexive ping-response cycle.`
+      ? `<strong>${(val*100).toFixed(0)}%</strong> of ${name}'s sessions are notification-triggered, exceeding the ${(thr*100).toFixed(0)}% threshold. Platform has successfully conditioned a reflexive ping-response cycle.`
       : `<strong>${(val*100).toFixed(0)}%</strong> of sessions begin via notification — within acceptable range (threshold: ${(thr*100).toFixed(0)}%).`;
     case 'ACS': return hit
-      ? `Content served to ${name} has drifted to <strong>${val}</strong> (threshold: ${thr}). The algorithm is feeding high-arousal negative content far from stated preferences — a documented engagement-maximizing but psychologically harmful pattern.`
-      : `Affective alignment score <strong>${val}</strong> — content remains close to ${name}'s stated preferences (threshold: ${thr}).`;
+      ? `Content served to ${name} has drifted to <strong>${val}</strong> (threshold: ${thr}). The algorithm is feeding high-arousal negative content — a documented psychologically harmful pattern.`
+      : `Affective alignment <strong>${val}</strong> — content remains close to ${name}'s preferences (threshold: ${thr}).`;
     default: return '';
   }
 }
 
-// ── Dashboard render ───────────────────────────────────────────────────────────
+// ── Dashboard render (cards with line charts) ──────────────────────────────────
 function renderUsers(users) {
   _users = users;
   document.getElementById('user-grid').innerHTML = users.map(u => {
@@ -215,35 +275,111 @@ function renderUsers(users) {
     ].filter(Boolean).join('');
 
     const ivHtml = u.active_interventions.length
-      ? `<div class="interventions"><strong>Interventions:</strong> ${
+      ? `<div class="interventions"><strong>Active:</strong> ${
           u.active_interventions.map(i=>`<span class="tag">${i.replace(/_/g,' ')}</span>`).join('')}</div>` : '';
-
-    const spark = hist.length > 1
-      ? `<div class="sparkline">${hist.map((s,i)=>
-          `<div class="spark-bar" style="height:${s}%;background:${riskColor(levelOf(s))}" title="S${i+1}: ${s}"></div>`
-        ).join('')}</div>` : '';
 
     return `<div class="user-card${rec?' recovering':''}"
          style="border-top:4px solid ${color};background:${bg}"
          onclick="showUserDetail('${u.user_id}')"
          role="button" tabindex="0"
          onkeydown="if(event.key==='Enter')showUserDetail('${u.user_id}')">
-      <div class="user-header">
+      <div class="card-header-row">
         <div>
           <div class="user-name">${u.name}</div>
-          <div class="user-meta">Age ${u.age} · Session ${u.session} · ${u.is_minor?'<strong style="color:#b45309">Minor</strong>':'Adult'}</div>
+          <div class="user-meta">Age ${u.age} · ${u.is_minor?'<strong style="color:#b45309">Minor</strong>':'Adult'} · Session ${u.session}</div>
         </div>
-        <div class="user-score-col">
-          <span class="risk-badge" style="background:${color}">${u.risk_level}</span>
-          <div class="risk-score">${u.risk_score}<span class="score-max">/100</span>${deltaHtml}</div>
+        <div class="card-level-pill" style="background:${color}">${u.risk_level}</div>
+      </div>
+      <div class="card-chart-area">
+        <div class="card-score-row">
+          <span class="card-score-num" style="color:${color}">${u.risk_score}</span>
+          <span class="card-score-label" style="color:${color}">${u.risk_level} RISK</span>
+          ${deltaHtml}
         </div>
+        ${scoreLineChart(hist, u.user_id)}
       </div>
       ${badges?`<div class="badge-row">${badges}</div>`:''}
       <div class="metrics-section">${mHtml}</div>
-      ${ivHtml}${spark}
+      ${ivHtml}
       <div class="card-hint">Click for full analysis →</div>
     </div>`;
   }).join('');
+
+  updateRmfPanel();
+}
+
+// ── NIST RMF Status Panel ──────────────────────────────────────────────────────
+function updateRmfPanel() {
+  const panel = document.getElementById('rmf-panel');
+  if (!panel) return;
+
+  // GOVERN
+  const gStatus = _auditResult ? 'green' : (_auditFailed ? 'red' : 'amber');
+  const gLabel  = _auditResult ? 'Pre-commitment record: Active' : 'No audit on record';
+  const gDetail = _auditResult
+    ? `Platform: ${_auditResult.platform_name} · Score: ${_auditResult.risk_score}/100`
+    : 'Run a Feature Audit to establish a GOVERN record.';
+
+  // MAP — count unique triggered metric keys across all users
+  const triggered = new Set();
+  _users.forEach(u => Object.entries(u.metrics||{}).forEach(([k,m]) => { if (m.triggered) triggered.add(k); }));
+  const mCount  = triggered.size;
+  const mStatus = mCount === 5 ? 'green' : mCount > 0 ? 'amber' : 'red';
+  const mLabel  = `${mCount}/5 pathways mapped`;
+  const mDetail = mCount === 5
+    ? 'All RIS metrics triggered — full feature→harm pathway documented.'
+    : mCount > 0
+    ? `${[...triggered].join(', ')} triggered. Advance sessions to document remaining.`
+    : 'No metrics triggered yet. Click Next Session.';
+
+  // MEASURE — intervention efficacy
+  const anyRecovering = _users.some(u => u.recovering);
+  const anyFired      = _users.some(u => u.intervention_fired);
+  const mEStatus = anyRecovering ? 'green' : anyFired ? 'amber' : 'red';
+  const mELabel  = anyRecovering ? 'Efficacy confirmed'
+    : anyFired ? 'Intervention active — monitoring' : 'No interventions triggered';
+  const recN = _users.filter(u => u.recovering).length;
+  const mEDetail = anyRecovering
+    ? `${recN} user${recN!==1?'s':''} showing measurable score decay post-intervention.`
+    : anyFired ? 'Interventions fired. Awaiting measurable outcome (advance sessions).'
+    : 'Advance sessions until a HIGH-risk user triggers an intervention.';
+
+  // MANAGE — child safety events
+  const csN = _users.filter(u => u.is_child_safety_event).length;
+  const mgStatus = csN === 0 ? 'green' : csN <= 2 ? 'amber' : 'red';
+  const mgLabel  = csN === 0 ? 'Incident log: Clean' : `${csN} child safety event${csN!==1?'s':''}`;
+  const mgDetail = csN === 0
+    ? 'No child safety events in current session.'
+    : `${csN} simultaneous ACS+NSCR breach${csN!==1?'es':''} for minor user detected. KOSA § 4(b) duty triggered.`;
+
+  const col = (fn, status, label, detail, target) => `
+    <div class="rmf-col rmf-${status}" onclick="viewRmfSection('${target}')" role="button" tabindex="0">
+      <div class="rmf-fn">${fn}</div>
+      <div class="rmf-badge rmf-badge-${status}">
+        <span class="rmf-dot"></span>
+        <span class="rmf-badge-text">${label}</span>
+      </div>
+      <div class="rmf-detail">${detail}</div>
+      <div class="rmf-view-btn">View in Audit →</div>
+    </div>`;
+
+  panel.innerHTML =
+    col('GOVERN',  gStatus,  gLabel,  gDetail,  'govern')  +
+    col('MAP',     mStatus,  mLabel,  mDetail,  'map')     +
+    col('MEASURE', mEStatus, mELabel, mEDetail, 'measure') +
+    col('MANAGE',  mgStatus, mgLabel, mgDetail, 'manage');
+}
+
+function viewRmfSection(section) {
+  if (!_auditResult) {
+    switchTab('audit-form');
+    return;
+  }
+  switchTab('audit-results');
+  setTimeout(() => {
+    const el = document.getElementById('nist-section');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
 }
 
 // ── User detail ────────────────────────────────────────────────────────────────
@@ -251,7 +387,8 @@ function showUserDetail(userId) {
   _selectedUserId = userId;
   const u = _users.find(u => u.user_id === userId);
   if (!u) return;
-  navigate('detail', u.name);
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
   renderDetailContent(u);
 }
 
@@ -280,9 +417,9 @@ function renderDetailContent(u) {
   }).join('');
 
   const IV_DESC = {
-    notification_suppression:    'Push notifications are being throttled and delayed to break the conditioned ping-response loop and lengthen re-entry latency.',
-    affective_rebalancing:       'The content ranking algorithm is re-weighted away from high-arousal negative content toward neutral content aligned with stated preferences.',
-    compulsion_signal_quarantine:'Compulsion-loop triggers (streaks, unread counts, engagement bait) are being suppressed to reduce reflexive re-entry behavior.',
+    notification_suppression:    'Push notifications throttled and delayed to break conditioned ping-response loop and lengthen re-entry latency.',
+    affective_rebalancing:       'Content ranking re-weighted away from high-arousal negative content toward neutral content aligned with stated preferences.',
+    compulsion_signal_quarantine:'Compulsion triggers (streaks, unread counts, engagement bait) suppressed to reduce reflexive re-entry behavior.',
   };
   const ivHtml = u.active_interventions.length
     ? `<div class="detail-section">
@@ -297,9 +434,9 @@ function renderDetailContent(u) {
   const csHtml = u.is_child_safety_event
     ? `<div class="cs-alert">
         <div class="cs-title">⚠ Child Safety Event — Simultaneous ACS + NSCR Breach (Minor)</div>
-        <p>Both affective drift and notification-conditioning thresholds are simultaneously exceeded for a minor user. Elevated legal duties apply:</p>
+        <p>Both affective drift and notification-conditioning thresholds simultaneously exceeded for a minor user. Elevated legal duties apply:</p>
         <ul>
-          <li><strong>KOSA § 4(b)</strong> — Platforms must apply the highest available protection standards when serving minors.</li>
+          <li><strong>KOSA § 4(b)</strong> — Platforms must apply highest protection standards when serving minors.</li>
           <li><strong>UK Online Safety Act § 12</strong> — Duty of care requires proactive mitigation of risk to children.</li>
           <li><strong>COPPA / COPPA 2.0</strong> — Behavioral profiling of minors without verified parental consent is prohibited.</li>
         </ul>
@@ -344,8 +481,7 @@ function renderDetailContent(u) {
       <h3 class="ds-title">Metric Analysis</h3>
       <div class="dmc-grid">${mCards}</div>
     </div>
-    ${ivHtml}
-    ${sparkHtml}`;
+    ${ivHtml}${sparkHtml}`;
 
   animateGauges();
 }
@@ -358,25 +494,25 @@ function inferLegal(p) {
   return laws.map(l=>`<span class="law-tag">${l}</span>`).join('') || '—';
 }
 
-function nistRows(audit) {
+function nistTableRows(audit) {
   const s = audit.risk_score||0, pats = audit.flagged_patterns||[], rems = audit.remediation||[];
   const rows = [
     { fn:'GOVERN', icon: s>=70?'red':s>=40?'yellow':'green',
       q:'Did the platform pre-commit to behavioral safety objectives?',
-      d: s>=70 ? 'No evidence of pre-committed behavioral safety policy. High-risk patterns indicate engagement was optimized over user safety without documented safeguards.'
-               : s>=40 ? 'Partial governance observed. Some patterns suggest unresolved tension between engagement metrics and safety commitments.'
+      d: s>=70 ? 'No evidence of pre-committed behavioral safety policy. High-risk patterns indicate engagement was optimized over user safety.'
+               : s>=40 ? 'Partial governance observed. Some patterns suggest tension between engagement metrics and safety commitments.'
                : 'Platform appears to operate within defensible behavioral safety bounds.' },
     { fn:'MAP', icon: pats.length>=3?'red':pats.length>=1?'yellow':'green',
       q:'Can you trace the risk pathway from feature → mechanism → harm?',
-      d: pats.length>=3 ? `${pats.length} traceable risk pathways identified. Each flagged pattern links to documented psychological harm per Twenge et al. (2018) and Oulasvirta et al. (2012).`
+      d: pats.length>=3 ? `${pats.length} traceable risk pathways identified. Each links to documented psychological harm per Twenge et al. (2018) and Oulasvirta et al. (2012).`
                : pats.length>=1 ? `${pats.length} risk pathway identified. Further causal mapping recommended.`
                : 'No clear risk-to-harm pathways detected in submitted features.' },
     { fn:'MEASURE', icon:'yellow',
       q:'Is there a before/after measurement of intervention effectiveness?',
-      d:'Pre-intervention baselines have been captured for this session. Post-intervention confirmation requires platform telemetry integration.' },
+      d:'Pre-intervention baselines captured for this session. Post-intervention confirmation requires platform telemetry integration.' },
     { fn:'MANAGE', icon: rems.length>0?'yellow':'red',
       q:'Is there a living, append-only remediation record?',
-      d: rems.length>0 ? `${rems.length} remediation action(s) logged. A formal append-only record has not been confirmed — this audit timestamp serves as a baseline entry.`
+      d: rems.length>0 ? `${rems.length} remediation action(s) logged. Formal append-only record not confirmed — this audit timestamp serves as baseline entry.`
                : 'No remediation actions identified. An append-only corrective-action log must be established.' },
   ];
   const labels = { red:'Non-Compliant', yellow:'Partial', green:'Compliant' };
@@ -389,8 +525,12 @@ function nistRows(audit) {
 }
 
 function showAuditResults(data) {
-  _auditResult = data;
-  navigate('audit', data.platform_name);
+  _auditResult  = data;
+  _auditFailed  = false;
+  unlockAuditTab();
+  switchTab('audit-results');
+  updateRmfPanel();
+
   const color = riskColor(data.risk_level), bg = riskBg(data.risk_level);
   const pats = data.flagged_patterns||[], legal = data.legal_exposure||[], rems = data.remediation||[];
 
@@ -411,6 +551,8 @@ function showAuditResults(data) {
   const remHtml = rems.map((r,i)=>
     `<li class="rem-item"><span class="rem-num">${i+1}</span>${r}</li>`).join('')
     || '<li class="rem-item"><span class="rem-num">—</span>No steps identified.</li>';
+
+  const safePlat = (data.platform_name||'').replace(/'/g,"\\'");
 
   document.getElementById('audit-content').innerHTML = `
     <div class="audit-hero" style="background:${bg};border-left:5px solid ${color}">
@@ -437,12 +579,12 @@ function showAuditResults(data) {
       </table></div>
     </div>
 
-    <div class="audit-section">
+    <div class="audit-section" id="nist-section">
       <h3 class="as-title">NIST AI Risk Management Framework — Compliance Assessment</h3>
       <p class="as-desc">Based on submitted features and identified risk patterns. Reference: NIST AI RMF 1.0 (2023).</p>
       <div class="table-wrap"><table class="data-table nist-table">
         <thead><tr><th>Function</th><th>Requirement</th><th>Status</th><th>Assessment</th></tr></thead>
-        <tbody>${nistRows(data)}</tbody>
+        <tbody>${nistTableRows(data)}</tbody>
       </table></div>
     </div>
 
@@ -461,14 +603,14 @@ function showAuditResults(data) {
 
     <div class="audit-actions">
       <div class="litigation-download-wrap">
-        <button onclick="downloadLitigationPackage('${data.platform_name.replace(/'/g,"\\'")}')" class="btn-litigation btn-litigation-large">
-          ⬇ Download Litigation Package
+        <button onclick="openLitigationReport('${safePlat}')" class="btn-litigation btn-litigation-large">
+          ⬇ Open Litigation Report
         </button>
-        <div class="litigation-label">Full NIST RMF-mapped compliance record for legal discovery</div>
+        <div class="litigation-label">NIST RMF-mapped · Court-ready · Opens print-to-PDF in a new tab</div>
       </div>
       <div class="audit-actions-right">
         <a href="/report/${encodeURIComponent(data.platform_name)}" target="_blank" class="btn-secondary">📄 Printable Report</a>
-        <button onclick="window.print()" class="btn-secondary">🖨 Print This Page</button>
+        <button onclick="window.print()" class="btn-secondary">🖨 Print</button>
       </div>
     </div>`;
 
@@ -499,7 +641,13 @@ async function tick() {
 async function resetAll() {
   await fetch('/api/reset', { method:'POST' });
   _selectedUserId = null;
-  navigate('dashboard');
+  _auditResult    = null;
+  _auditFailed    = false;
+  const tab3 = document.getElementById('tab-audit-results');
+  tab3.disabled = true;
+  tab3.classList.add('tab-locked');
+  tab3.innerHTML = 'Audit Results';
+  switchTab('live');
   fetchState();
 }
 
@@ -516,10 +664,22 @@ async function runAudit() {
     });
     showAuditResults(await res.json());
   } catch(e) {
+    _auditFailed = true;
+    updateRmfPanel();
     alert('Audit failed — check server logs.');
   } finally {
     btn.textContent = 'Analyze Features'; btn.disabled = false;
   }
+}
+
+// ── Litigation report ──────────────────────────────────────────────────────────
+function openLitigationReport(platformName) {
+  const plat = platformName || (_auditResult && _auditResult.platform_name)
+    || document.getElementById('platform-name')?.value || 'unknown';
+  window.open('/litigation-report/' + encodeURIComponent(plat), '_blank');
+  setTimeout(() => {
+    alert('The litigation report has opened in a new tab.\n\nTo save as PDF:\n• Mac: Press ⌘ + P → Save as PDF\n• Windows: Press Ctrl + P → Save as PDF');
+  }, 400);
 }
 
 function toggleExplainer() {
@@ -529,38 +689,11 @@ function toggleExplainer() {
   btn.textContent = body.hidden ? 'Learn more ▾' : 'Hide ▴';
 }
 
-// ── Litigation export ──────────────────────────────────────────────────────────
-async function downloadLitigationPackage(platformName) {
-  const plat = platformName
-    || (document.getElementById('audit-content') && _auditResult && _auditResult.platform_name)
-    || document.getElementById('platform-name')?.value
-    || 'unknown';
-
-  const btn = event?.currentTarget;
-  const origText = btn?.textContent;
-  if (btn) { btn.textContent = 'Generating…'; btn.disabled = true; }
-
-  try {
-    const res = await fetch('/api/litigation-export?platform_name=' + encodeURIComponent(plat));
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    const blob = await res.blob();
-    const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
-    const safePlat = plat.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-    const filename = `algoguard-litigation-export-${safePlat}-${date}.json`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  } catch(e) {
-    alert('Export failed: ' + e.message);
-  } finally {
-    if (btn) { btn.textContent = origText; btn.disabled = false; }
-  }
-}
-
 // ── Init ───────────────────────────────────────────────────────────────────────
+if (window.location.hash === '#audit') {
+  switchTab('audit-form');
+  history.replaceState(null, '', '/dashboard');
+}
 fetchState();
 setInterval(fetchState, 3000);
 </script>
