@@ -1,6 +1,6 @@
 # AlgoGuard
 
-A real-time social media algorithm compliance auditing tool. Built in 5 hours at the Claremont Accelerator Hackathon (April 2026).
+A real-time social media algorithm compliance auditing tool. Built with claude code in 5 hours at the Claremont Accelerator Hackathon (April 2026).
 
 ## What It Does
 
